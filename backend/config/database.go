@@ -53,10 +53,21 @@ func ConnectDatabase() {
 
 	log.Println("MongoDB connected successfully!")
 
-	// Redis
-	RedisClient = redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
-	})
+	// Redis is optional so the API can run without realtime streaming.
+	redisURL := os.Getenv("REDIS_URL")
+	if redisURL == "" && os.Getenv("PORT") == "" {
+		redisURL = "redis://localhost:6379"
+	}
+	if redisURL == "" {
+		log.Println("Warning: REDIS_URL is not set; realtime streaming is disabled")
+		return
+	}
+
+	redisOptions, err := redis.ParseURL(redisURL)
+	if err != nil {
+		log.Fatal("Invalid REDIS_URL:", err)
+	}
+	RedisClient = redis.NewClient(redisOptions)
 
 	redisCtx, redisCancel := context.WithTimeout(
 		context.Background(),
@@ -67,7 +78,10 @@ func ConnectDatabase() {
 	_, err = RedisClient.Ping(redisCtx).Result()
 
 	if err != nil {
-		log.Fatal("Redis connection failed:", err)
+		RedisClient.Close()
+		RedisClient = nil
+		log.Println("Warning: Redis connection failed; realtime streaming is disabled:", err)
+		return
 	}
 
 	log.Println("Redis connected successfully!")
