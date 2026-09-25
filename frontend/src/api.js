@@ -1,6 +1,4 @@
-const DEFAULT_API_URL = import.meta.env.DEV
-  ? 'http://localhost:8080'
-  : 'https://live-vote-poll-backend.onrender.com'
+const DEFAULT_API_URL = 'https://live-vote-poll-backend.onrender.com'
 const API_URL = (import.meta.env.VITE_API_URL || DEFAULT_API_URL).replace(/\/$/, '')
 const SESSION_KEY = 'pulsepoll.session'
 
