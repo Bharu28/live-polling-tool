@@ -290,12 +290,6 @@ func pollUpdateChannel(pollID string) string {
 }
 
 func CreatePoll(c *gin.Context) {
-	userID, err := currentUserIDFromJWT(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Authentication required."})
-		return
-	}
-
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Request body must be valid JSON."})
@@ -317,7 +311,6 @@ func CreatePoll(c *gin.Context) {
 		Question:  question,
 		Options:   options,
 		Status:    "live",
-		CreatedBy: userID,
 		CreatedAt: time.Now().UTC().Format(time.RFC3339),
 	}
 	ensurePollDefaults(&poll)
